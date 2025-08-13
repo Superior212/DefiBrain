@@ -30,9 +30,13 @@ import {
   Tooltip,
 } from "recharts";
 import Link from "next/link";
+import { ConnectWallet } from "@/components/web3/ConnectWallet";
+import { WalletInfo } from "@/components/web3/WalletInfo";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import { usePrivy } from '@privy-io/react-auth';
 
 // Enhanced mock data with more realistic portfolio growth
-const portfolioData = [
+const mockChartData = [
   { name: "Jan", value: 10000, change: 0 },
   { name: "Feb", value: 12500, change: 25 },
   { name: "Mar", value: 11800, change: -5.6 },
@@ -66,6 +70,23 @@ const recentActivities = [
 ];
 
 export default function Page() {
+  const { authenticated } = usePrivy();
+  const { portfolioData, vaultInfo, isLoading, refreshData } = usePortfolio();
+  
+  if (!authenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold">Welcome to DefiBrain</h1>
+          <p className="text-muted-foreground max-w-md">
+            Connect your wallet to access AI-powered DeFi yield optimization on Mantle Network
+          </p>
+        </div>
+        <ConnectWallet variant="full" />
+      </div>
+    );
+  }
+  
   return (
     <div>
       {/* Header */}
@@ -94,6 +115,11 @@ export default function Page() {
 
       {/* Main Content */}
       <div className="px-6 py-8">
+        {/* Wallet Info */}
+        <div className="mb-8">
+          <WalletInfo />
+        </div>
+        
         {/* Portfolio Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
@@ -104,7 +130,9 @@ export default function Page() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$22,400</div>
+              <div className="text-2xl font-bold">
+                ${portfolioData?.totalValue || '0.00'}
+              </div>
               <div className="flex items-center text-xs text-green-600">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 +18.5% from last week
@@ -166,7 +194,7 @@ export default function Page() {
           <CardContent>
             <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={portfolioData}>
+                <AreaChart data={mockChartData}>
                   <defs>
                     <linearGradient
                       id="portfolioGradient"
