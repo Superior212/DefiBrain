@@ -38,14 +38,19 @@ export function useContract() {
 
         const transaction = prepareContractCall({
           contract,
-          method: functionName,
+          method: functionName as any,
           params: args,
           value,
         });
 
+        const account = wallet.getAccount();
+        if (!account) {
+          return { success: false, error: 'No account available' };
+        }
+
         const result = await sendTransaction({
           transaction,
-          account: wallet.getAccount(),
+          account,
         });
 
         return {
@@ -70,7 +75,7 @@ export function useContract() {
     async (amount: string): Promise<ContractCallResult> => {
       const amountWei = BigInt(parseFloat(amount) * 10 ** 18);
       return executeContractCall(
-        contracts.defiBrainVault,
+        contracts.vault,
         'deposit',
         [amountWei],
         amountWei
@@ -83,7 +88,7 @@ export function useContract() {
     async (shares: string): Promise<ContractCallResult> => {
       const sharesWei = BigInt(parseFloat(shares) * 10 ** 18);
       return executeContractCall(
-        contracts.defiBrainVault,
+        contracts.vault,
         'withdraw',
         [sharesWei]
       );

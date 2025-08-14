@@ -59,24 +59,24 @@ export function usePortfolio() {
       const vaultContract = getContract({
         client,
         chain: mantleNetwork,
-        address: contracts.defiBrainVault,
+        address: contracts.vault,
       });
 
       // Fetch portfolio data
       const [totalValue, positions, vaultShares] = await Promise.all([
         readContract({
           contract: portfolioContract,
-          method: 'getTotalValue',
+          method: 'getTotalValue' as any,
           params: [user.wallet.address],
         }),
         readContract({
           contract: portfolioContract,
-          method: 'getPositions',
+          method: 'getPositions' as any,
           params: [user.wallet.address],
         }),
         readContract({
           contract: vaultContract,
-          method: 'balanceOf',
+          method: 'balanceOf' as any,
           params: [user.wallet.address],
         }),
       ]);
@@ -130,18 +130,18 @@ export function usePortfolio() {
       const vaultContract = getContract({
         client,
         chain: mantleNetwork,
-        address: contracts.defiBrainVault,
+        address: contracts.vault,
       });
 
       const [totalAssets, totalShares] = await Promise.all([
         readContract({
           contract: vaultContract,
-          method: 'totalAssets',
+          method: 'totalAssets' as any,
           params: [],
         }),
         readContract({
           contract: vaultContract,
-          method: 'totalSupply',
+          method: 'totalSupply' as any,
           params: [],
         }),
       ]);

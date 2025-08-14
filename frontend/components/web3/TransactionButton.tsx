@@ -65,10 +65,10 @@ export function TransactionButton({
         // Reset status after 3 seconds
         setTimeout(() => setTxStatus('idle'), 3000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setTxStatus('error');
       toast.error('Transaction failed', {
-        description: error.message || 'Unknown error occurred',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
       });
       
       // Reset status after 3 seconds

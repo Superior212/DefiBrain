@@ -76,7 +76,7 @@ export function ConnectWallet({ variant = 'default', className }: ConnectWalletP
               Connect Your Wallet
             </CardTitle>
             <CardDescription>
-              Connect your wallet to start using DefiBrain's AI-powered DeFi strategies
+              Connect your wallet to start using DefiBrain&apos;s AI-powered DeFi strategies
             </CardDescription>
           </CardHeader>
           <CardContent>
