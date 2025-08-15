@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useActiveWallet } from 'thirdweb/react';
 import { getContract, prepareContractCall, sendTransaction } from 'thirdweb';
-import { client, mantleNetwork, contracts } from '@/lib/web3';
+import { client, anvilNetwork, contracts } from '@/lib/web3';
 import { usePrivy } from '@privy-io/react-auth';
 
 export interface ContractCallResult {
@@ -16,6 +16,18 @@ export function useContract() {
   const { authenticated } = usePrivy();
   const wallet = useActiveWallet();
   const [isLoading, setIsLoading] = useState(false);
+
+  const getContractInstance = useCallback((contractType: keyof typeof contracts) => {
+    if (!wallet) return null;
+    
+    const contractConfig = contracts[contractType];
+    return getContract({
+      client,
+      chain: anvilNetwork,
+      address: contractConfig.address,
+      abi: contractConfig.abi,
+    });
+  }, [wallet]);
 
   const executeContractCall = useCallback(
     async (
@@ -32,7 +44,7 @@ export function useContract() {
       try {
         const contract = getContract({
           client,
-          chain: mantleNetwork,
+          chain: anvilNetwork,
           address: contractAddress,
         });
 
@@ -75,7 +87,7 @@ export function useContract() {
     async (amount: string): Promise<ContractCallResult> => {
       const amountWei = BigInt(parseFloat(amount) * 10 ** 18);
       return executeContractCall(
-        contracts.vault,
+        contracts.vault.address,
         'deposit',
         [amountWei],
         amountWei
@@ -88,7 +100,7 @@ export function useContract() {
     async (shares: string): Promise<ContractCallResult> => {
       const sharesWei = BigInt(parseFloat(shares) * 10 ** 18);
       return executeContractCall(
-        contracts.vault,
+        contracts.vault.address,
         'withdraw',
         [sharesWei]
       );
@@ -108,7 +120,7 @@ export function useContract() {
       const minAmountOutWei = BigInt(parseFloat(minAmountOut) * 10 ** 18);
       
       return executeContractCall(
-        contracts.dexRouter,
+        contracts.dexRouter.address,
         'swapExactTokensForTokens',
         [amountInWei, minAmountOutWei, [tokenIn, tokenOut], wallet?.getAccount()?.address, Date.now() + 300000]
       );
@@ -120,7 +132,7 @@ export function useContract() {
   const updatePortfolio = useCallback(
     async (): Promise<ContractCallResult> => {
       return executeContractCall(
-        contracts.portfolioTracker,
+        contracts.portfolioTracker.address,
         'updatePortfolio',
         []
       );
@@ -128,12 +140,13 @@ export function useContract() {
     [executeContractCall]
   );
 
-  return {
-    isLoading,
+ return {
+    getContract: getContractInstance,
     executeContractCall,
     depositToVault,
     withdrawFromVault,
     swapTokens,
     updatePortfolio,
+    isLoading,
   };
 }

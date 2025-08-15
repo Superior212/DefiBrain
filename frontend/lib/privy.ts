@@ -51,6 +51,31 @@ const mantleTestnetChain = {
   },
 };
 
+const anvilLocalChain = {
+  id: 31337,
+  name: 'Anvil Local',
+  network: 'anvil-local',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ['http://127.0.0.1:8545'],
+    },
+    public: {
+      http: ['http://127.0.0.1:8545'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Local Explorer',
+      url: 'http://localhost:8545',
+    },
+  },
+};
+
 // Privy App ID (separate from config)
 export const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || 'beta_132f2a4ac7552294c7f7962f720d81f8';
 
@@ -76,7 +101,7 @@ export const privyConfig: PrivyClientConfig = {
   defaultChain: mantleChain,
   
   // Supported chains
-  supportedChains: [mantleChain, mantleTestnetChain],
+  supportedChains: [mantleChain, mantleTestnetChain, anvilLocalChain],
   
   // Additional configuration
   legal: {
@@ -88,6 +113,6 @@ export const privyConfig: PrivyClientConfig = {
 // Wallet connector configuration for wagmi
 export const walletConnectConfig = {
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id',
-  chains: [mantleChain, mantleTestnetChain],
+  chains: [mantleChain, mantleTestnetChain, anvilLocalChain],
   showQrModal: true,
 };

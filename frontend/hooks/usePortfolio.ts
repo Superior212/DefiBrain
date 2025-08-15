@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useActiveWallet } from 'thirdweb/react';
 import { getContract, readContract } from 'thirdweb';
-import { client, mantleNetwork, contracts } from '@/lib/web3';
+import { client, anvilNetwork, contracts } from '@/lib/web3';
 
 export interface PortfolioData {
   totalValue: string;
@@ -43,43 +43,51 @@ export function usePortfolio() {
   const fetchPortfolioData = useCallback(async () => {
     if (!authenticated || !user?.wallet?.address) {
       setPortfolioData(null);
+      setError('Please connect your wallet to view portfolio data');
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    
+    console.log('Fetching portfolio data for address:', user.wallet.address);
 
     try {
       const portfolioContract = getContract({
         client,
-        chain: mantleNetwork,
-        address: contracts.portfolioTracker,
+        chain: anvilNetwork,
+        address: contracts.portfolioTracker.address,
+        abi: contracts.portfolioTracker.abi,
       });
 
       const vaultContract = getContract({
         client,
-        chain: mantleNetwork,
-        address: contracts.vault,
+        chain: anvilNetwork,
+        address: contracts.vault.address,
+        abi: contracts.vault.abi,
       });
 
       // Fetch portfolio data
-      const [totalValue, positions, vaultShares] = await Promise.all([
-        readContract({
-          contract: portfolioContract,
-          method: 'getTotalValue' as any,
-          params: [user.wallet.address],
-        }),
-        readContract({
-          contract: portfolioContract,
-          method: 'getPositions' as any,
-          params: [user.wallet.address],
-        }),
-        readContract({
-          contract: vaultContract,
-          method: 'balanceOf' as any,
-          params: [user.wallet.address],
-        }),
-      ]);
+      console.log('Calling getPortfolio for:', user.wallet.address);
+      const portfolioData = await readContract({
+        contract: portfolioContract,
+        method: 'getPortfolio' as any,
+        params: [user.wallet.address],
+      });
+      
+      console.log('Portfolio data received:', portfolioData);
+      
+      console.log('Calling balanceOf for:', user.wallet.address);
+      const vaultShares = await readContract({
+        contract: vaultContract,
+        method: 'balanceOf' as any,
+        params: [user.wallet.address],
+      });
+      
+      console.log('Vault shares received:', vaultShares);
+
+      // Extract totalValueUSD from portfolio data
+      const totalValue = portfolioData[1]; // totalValueUSD is the second element
 
       // Mock data for demonstration (replace with actual contract calls)
       const mockPortfolioData: PortfolioData = {
@@ -117,7 +125,13 @@ export function usePortfolio() {
       setPortfolioData(mockPortfolioData);
     } catch (err: any) {
       console.error('Error fetching portfolio data:', err);
-      setError(err.message || 'Failed to fetch portfolio data');
+      const errorMessage = err?.message || err?.reason || err?.data?.message || 'Failed to fetch portfolio data';
+      setError(errorMessage);
+      
+      // If it's a contract call error, provide more context
+      if (err?.code === 'CALL_EXCEPTION' || err?.code === 'UNPREDICTABLE_GAS_LIMIT') {
+        setError('Contract interaction failed. Please ensure you are connected to the correct network and contracts are deployed.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -129,8 +143,9 @@ export function usePortfolio() {
     try {
       const vaultContract = getContract({
         client,
-        chain: mantleNetwork,
-        address: contracts.vault,
+        chain: anvilNetwork,
+        address: contracts.vault.address,
+        abi: contracts.vault.abi,
       });
 
       const [totalAssets, totalShares] = await Promise.all([
@@ -141,7 +156,7 @@ export function usePortfolio() {
         }),
         readContract({
           contract: vaultContract,
-          method: 'totalSupply' as any,
+          method: 'totalShares' as any,
           params: [],
         }),
       ]);

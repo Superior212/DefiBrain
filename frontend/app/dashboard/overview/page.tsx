@@ -33,7 +33,7 @@ import Link from "next/link";
 import { ConnectWallet } from "@/components/web3/ConnectWallet";
 import { WalletInfo } from "@/components/web3/WalletInfo";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy } from "@privy-io/react-auth";
 
 // Enhanced mock data with more realistic portfolio growth
 const mockChartData = [
@@ -72,21 +72,22 @@ const recentActivities = [
 export default function Page() {
   const { authenticated } = usePrivy();
   const { portfolioData, vaultInfo, isLoading, refreshData } = usePortfolio();
-  
+
   if (!authenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold">Welcome to DefiBrain</h1>
           <p className="text-muted-foreground max-w-md">
-            Connect your wallet to access AI-powered DeFi yield optimization on Mantle Network
+            Connect your wallet to access AI-powered DeFi yield optimization on
+            Mantle Network
           </p>
         </div>
         <ConnectWallet variant="full" />
       </div>
     );
   }
-  
+
   return (
     <div>
       {/* Header */}
@@ -119,7 +120,7 @@ export default function Page() {
         <div className="mb-8">
           <WalletInfo />
         </div>
-        
+
         {/* Portfolio Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
@@ -131,7 +132,7 @@ export default function Page() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${portfolioData?.totalValue || '0.00'}
+                ${portfolioData?.totalValue || "0.00"}
               </div>
               <div className="flex items-center text-xs text-green-600">
                 <TrendingUp className="h-3 w-3 mr-1" />
@@ -351,7 +352,7 @@ export default function Page() {
                 <Link href="/dashboard/ai">
                   <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div>
-                      <p className="font-medium">ZeroPulse AI</p>
+                      <p className="font-medium">DefiBrain AI</p>
                       <p className="text-sm text-muted-foreground">
                         AI-powered insights
                       </p>

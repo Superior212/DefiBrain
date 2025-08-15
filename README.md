@@ -176,4 +176,4 @@ MIT License - Built for Cook 04
 
 **🚀 DefiBrain - Where AI meets DeFi**
 
-*Submitted to Cookathon 2024 - Empowering the future of decentralized finance through artificial intelligence.*
+*Submitted to Cookathon 2025 - Empowering the future of decentralized finance through artificial intelligence.*

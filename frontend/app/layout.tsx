@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DefiBrain - AI-Powered Yield Aggregator",
-  description: "Intelligent DeFi yield optimization on Mantle Network with AI-driven strategies and social features",
+  description:
+    "Intelligent DeFi yield optimization on Mantle Network with AI-driven strategies and social features",
 };
 
 export default function RootLayout({
@@ -33,9 +34,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          <Web3Provider>
-            {children}
-          </Web3Provider>
+          <Web3Provider>{children}</Web3Provider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -21,7 +27,7 @@ import {
   Shield,
   Zap,
   Target,
-  Brain
+  Brain,
 } from "lucide-react";
 
 // Mock data for courses
@@ -29,7 +35,8 @@ const courses = [
   {
     id: 1,
     title: "DeFi Fundamentals",
-    description: "Learn the basics of decentralized finance, protocols, and yield farming",
+    description:
+      "Learn the basics of decentralized finance, protocols, and yield farming",
     level: "Beginner",
     duration: "2 hours",
     lessons: 8,
@@ -38,7 +45,7 @@ const courses = [
     students: 1234,
     category: "Fundamentals",
     thumbnail: "🏦",
-    completed: false
+    completed: false,
   },
   {
     id: 2,
@@ -52,12 +59,13 @@ const courses = [
     students: 567,
     category: "Strategies",
     thumbnail: "📈",
-    completed: false
+    completed: false,
   },
   {
     id: 3,
     title: "Smart Contract Security",
-    description: "Understand smart contract risks and how to protect your investments",
+    description:
+      "Understand smart contract risks and how to protect your investments",
     level: "Intermediate",
     duration: "3 hours",
     lessons: 10,
@@ -66,7 +74,7 @@ const courses = [
     students: 890,
     category: "Security",
     thumbnail: "🔒",
-    completed: true
+    completed: true,
   },
   {
     id: 4,
@@ -80,8 +88,8 @@ const courses = [
     students: 678,
     category: "Portfolio",
     thumbnail: "💼",
-    completed: false
-  }
+    completed: false,
+  },
 ];
 
 const articles = [
@@ -92,7 +100,7 @@ const articles = [
     readTime: "5 min read",
     category: "Risk Management",
     author: "DeFi Expert",
-    publishedAt: "2 days ago"
+    publishedAt: "2 days ago",
   },
   {
     id: 2,
@@ -101,7 +109,7 @@ const articles = [
     readTime: "8 min read",
     category: "Protocols",
     author: "Research Team",
-    publishedAt: "1 week ago"
+    publishedAt: "1 week ago",
   },
   {
     id: 3,
@@ -110,8 +118,8 @@ const articles = [
     readTime: "6 min read",
     category: "Optimization",
     author: "Tech Lead",
-    publishedAt: "3 days ago"
-  }
+    publishedAt: "3 days ago",
+  },
 ];
 
 const achievements = [
@@ -120,29 +128,29 @@ const achievements = [
     title: "DeFi Novice",
     description: "Complete your first DeFi course",
     icon: "🎓",
-    unlocked: true
+    unlocked: true,
   },
   {
     id: 2,
     title: "Yield Farmer",
     description: "Master yield farming strategies",
     icon: "🌾",
-    unlocked: false
+    unlocked: false,
   },
   {
     id: 3,
     title: "Security Expert",
     description: "Complete all security courses",
     icon: "🛡️",
-    unlocked: true
+    unlocked: true,
   },
   {
     id: 4,
     title: "Portfolio Master",
     description: "Build a diversified DeFi portfolio",
     icon: "💎",
-    unlocked: false
-  }
+    unlocked: false,
+  },
 ];
 
 const getLevelColor = (level: string) => {
@@ -185,27 +193,27 @@ export default function EducationPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Courses Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Courses Completed
+            </CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">
-              3 in progress
-            </p>
+            <p className="text-xs text-muted-foreground">3 in progress</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Learning Hours</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Learning Hours
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12.5</div>
-            <p className="text-xs text-muted-foreground">
-              +2.5 this week
-            </p>
+            <p className="text-xs text-muted-foreground">+2.5 this week</p>
           </CardContent>
         </Card>
 
@@ -216,9 +224,7 @@ export default function EducationPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">
-              2 more to unlock
-            </p>
+            <p className="text-xs text-muted-foreground">2 more to unlock</p>
           </CardContent>
         </Card>
 
@@ -229,9 +235,7 @@ export default function EducationPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Intermediate</div>
-            <p className="text-xs text-muted-foreground">
-              Keep learning!
-            </p>
+            <p className="text-xs text-muted-foreground">Keep learning!</p>
           </CardContent>
         </Card>
       </div>
@@ -255,7 +259,9 @@ export default function EducationPage() {
                 <div className="text-4xl">{courses[0].thumbnail}</div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{courses[0].title}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{courses[0].description}</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {courses[0].description}
+                  </p>
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
@@ -289,22 +295,30 @@ export default function EducationPage() {
           <Card>
             <CardHeader>
               <CardTitle>All Courses</CardTitle>
-              <CardDescription>Explore our comprehensive DeFi curriculum</CardDescription>
+              <CardDescription>
+                Explore our comprehensive DeFi curriculum
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {courses.map((course) => (
-                  <div key={course.id} className="border rounded-lg p-6 hover:bg-accent/50 transition-colors">
+                  <div
+                    key={course.id}
+                    className="border rounded-lg p-6 hover:bg-accent/50 transition-colors">
                     <div className="flex items-start justify-between mb-4">
                       <div className="text-3xl">{course.thumbnail}</div>
                       {course.completed && (
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       )}
                     </div>
-                    
-                    <h3 className="font-semibold text-lg mb-2">{course.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{course.description}</p>
-                    
+
+                    <h3 className="font-semibold text-lg mb-2">
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {course.description}
+                    </p>
+
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
                       <span className="flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
@@ -325,13 +339,13 @@ export default function EducationPage() {
                         <Badge className={getLevelColor(course.level)}>
                           {course.level}
                         </Badge>
-                        <Badge variant="outline">
-                          {course.category}
-                        </Badge>
+                        <Badge variant="outline">{course.category}</Badge>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{course.rating}</span>
+                        <span className="text-sm font-medium">
+                          {course.rating}
+                        </span>
                       </div>
                     </div>
 
@@ -345,7 +359,9 @@ export default function EducationPage() {
                       </div>
                     )}
 
-                    <Button className="w-full" variant={course.completed ? "outline" : "default"}>
+                    <Button
+                      className="w-full"
+                      variant={course.completed ? "outline" : "default"}>
                       {course.completed ? (
                         <>
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -374,17 +390,25 @@ export default function EducationPage() {
           <Card>
             <CardHeader>
               <CardTitle>Latest Articles</CardTitle>
-              <CardDescription>Stay updated with the latest DeFi insights</CardDescription>
+              <CardDescription>
+                Stay updated with the latest DeFi insights
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {articles.map((article) => (
-                  <div key={article.id} className="border rounded-lg p-6 hover:bg-accent/50 transition-colors">
+                  <div
+                    key={article.id}
+                    className="border rounded-lg p-6 hover:bg-accent/50 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-2">{article.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{article.description}</p>
-                        
+                        <h3 className="font-semibold text-lg mb-2">
+                          {article.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {article.description}
+                        </p>
+
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                           <span className="flex items-center">
                             <Clock className="h-4 w-4 mr-1" />
@@ -394,11 +418,9 @@ export default function EducationPage() {
                           <span>{article.publishedAt}</span>
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col items-end space-y-2 ml-6">
-                        <Badge variant="outline">
-                          {article.category}
-                        </Badge>
+                        <Badge variant="outline">{article.category}</Badge>
                         <Button size="sm">
                           <FileText className="h-4 w-4 mr-2" />
                           Read
@@ -421,21 +443,24 @@ export default function EducationPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {achievements.map((achievement) => (
-                  <div 
-                    key={achievement.id} 
+                  <div
+                    key={achievement.id}
                     className={`border rounded-lg p-6 transition-colors ${
-                      achievement.unlocked 
-                        ? "bg-green-50 border-green-200" 
+                      achievement.unlocked
+                        ? "bg-green-50 border-green-200"
                         : "bg-gray-50 border-gray-200 opacity-60"
-                    }`}
-                  >
+                    }`}>
                     <div className="flex items-center space-x-4">
                       <div className="text-3xl">
                         {achievement.unlocked ? achievement.icon : "🔒"}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{achievement.title}</h3>
-                        <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                        <h3 className="font-semibold text-lg">
+                          {achievement.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {achievement.description}
+                        </p>
                       </div>
                       {achievement.unlocked ? (
                         <CheckCircle className="h-6 w-6 text-green-600" />

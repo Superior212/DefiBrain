@@ -192,7 +192,7 @@ export default function DashboardLayout({
             const isActive =
               pathname === item.href ||
               (item.name === "Vaults" && pathname === "/dashboard");
-            const isAI = item.name === "ZeroPulse AI";
+            const isAI = item.name === "DefiBrain AI";
 
             return (
               <Link
