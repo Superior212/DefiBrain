@@ -162,7 +162,7 @@ cd contracts && forge script script/DeployPhase1.s.sol --broadcast
 5. **Monitor Performance**: Track your portfolio growth
 
 **Demo**: [[Live Demo Link](https://defi-brain.vercel.app/)] 
-**Video**: [Demo Video Link] 
+**Video**: [[Demo Video Link](https://www.loom.com/share/d45fc14a4e7740058fb618cfc52b96a7?sid=505d80ef-4ff9-4a09-919f-f511c9a25baf)] 
 
 ## 🏅 Team
 

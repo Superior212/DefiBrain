@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ConnectWallet } from "@/components/web3/ConnectWallet";
 
 const carouselSlides = [
   {
@@ -255,10 +256,7 @@ export default function DashboardLayout({
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-avatar.jpg" />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
+              <ConnectWallet variant="compact" />
             </div>
           </div>
         </header>
