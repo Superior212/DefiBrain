@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { ThirdwebProvider } from 'thirdweb/react';
 import { privyAppId, privyConfig } from '@/lib/privy';
-import { client } from '@/lib/web3';
 
 interface Web3ProviderProps {
   children: React.ReactNode;
