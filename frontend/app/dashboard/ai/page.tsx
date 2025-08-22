@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAI } from "@/hooks/useAI";
 import {
   Card,
   CardContent,
@@ -30,83 +31,7 @@ import {
   User,
 } from "lucide-react";
 
-// Mock data for AI insights
-const aiInsights = [
-  {
-    id: 1,
-    type: "opportunity",
-    title: "High Yield Opportunity Detected",
-    description:
-      "AAVE lending rates for USDC have increased to 4.2%. Consider moving funds from lower-yield positions.",
-    confidence: 92,
-    impact: "High",
-    timeframe: "24 hours",
-    action: "Rebalance Portfolio",
-  },
-  {
-    id: 2,
-    type: "risk",
-    title: "Smart Contract Risk Alert",
-    description:
-      "Unusual activity detected in one of your vault protocols. Consider reducing exposure.",
-    confidence: 78,
-    impact: "Medium",
-    timeframe: "Immediate",
-    action: "Review Position",
-  },
-  {
-    id: 3,
-    type: "optimization",
-    title: "Gas Fee Optimization",
-    description:
-      "Network congestion is low. Optimal time for pending transactions and rebalancing.",
-    confidence: 95,
-    impact: "Low",
-    timeframe: "2 hours",
-    action: "Execute Transactions",
-  },
-];
 
-const chatHistory = [
-  {
-    id: 1,
-    type: "user",
-    message: "What's the best strategy for my current portfolio?",
-    timestamp: "2 minutes ago",
-  },
-  {
-    id: 2,
-    type: "ai",
-    message:
-      "Based on your current portfolio allocation and risk profile, I recommend diversifying into stable yield farming strategies. Your current exposure to high-risk DeFi protocols is 65%, which is above your stated risk tolerance of 50%. Consider moving 15% to stable USDC lending on Aave or Compound.",
-    timestamp: "2 minutes ago",
-  },
-  {
-    id: 3,
-    type: "user",
-    message: "How do I reduce impermanent loss risk?",
-    timestamp: "5 minutes ago",
-  },
-  {
-    id: 4,
-    type: "ai",
-    message:
-      "To reduce impermanent loss risk: 1) Choose pairs with correlated assets (like stablecoin pairs), 2) Consider single-asset staking instead of LP tokens, 3) Use protocols with impermanent loss protection, 4) Monitor price divergence closely and exit positions when necessary.",
-    timestamp: "5 minutes ago",
-  },
-];
-
-const confidenceMetrics = {
-  current: 85,
-  trend: "stable", // "up", "down", "stable"
-  categories: [
-    { name: "Market Analysis", confidence: 92, color: "text-green-600" },
-    { name: "Risk Assessment", confidence: 78, color: "text-yellow-600" },
-    { name: "Portfolio Health", confidence: 89, color: "text-blue-600" },
-    { name: "Yield Predictions", confidence: 81, color: "text-purple-600" },
-  ],
-  lastUpdated: "2 minutes ago",
-};
 
 const getInsightIcon = (type: string) => {
   switch (type) {
@@ -148,17 +73,37 @@ const getConfidenceBg = (confidence: number) => {
 
 export default function DefiBrainAIPage() {
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { insights, chatHistory, confidenceMetrics, stats, isLoading: aiLoading, error, sendMessage, isTyping } = useAI();
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
-    setIsLoading(true);
-    // Simulate AI response
-    setTimeout(() => {
-      setIsLoading(false);
-      setMessage("");
-    }, 2000);
+    const messageToSend = message;
+    setMessage(""); // Clear input immediately
+    sendMessage(messageToSend);
   };
+
+  if (aiLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading AI insights...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 mb-2">Error loading AI data</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -193,8 +138,8 @@ export default function DefiBrainAIPage() {
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">87%</div>
-            <p className="text-xs text-muted-foreground">High accuracy</p>
+            <div className="text-2xl font-bold">{stats.aiConfidence}%</div>
+            <p className="text-xs text-muted-foreground">{stats.aiConfidence >= 80 ? 'High accuracy' : stats.aiConfidence >= 60 ? 'Medium accuracy' : 'Low accuracy'}</p>
           </CardContent>
         </Card>
 
@@ -206,8 +151,8 @@ export default function DefiBrainAIPage() {
             <Lightbulb className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">+6 this week</p>
+            <div className="text-2xl font-bold">{stats.activeInsights}</div>
+            <p className="text-xs text-muted-foreground">+{Math.floor(stats.activeInsights * 0.25)} this week</p>
           </CardContent>
         </Card>
 
@@ -219,7 +164,7 @@ export default function DefiBrainAIPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">+$2,847</div>
+            <div className="text-2xl font-bold text-green-600">{stats.portfolioScore}/100</div>
             <p className="text-xs text-muted-foreground">
               Through AI recommendations
             </p>
@@ -234,9 +179,9 @@ export default function DefiBrainAIPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">$1,234</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.riskLevel}</div>
             <p className="text-xs text-muted-foreground">
-              Potential losses avoided
+              Current risk level
             </p>
           </CardContent>
         </Card>
@@ -294,7 +239,7 @@ export default function DefiBrainAIPage() {
                     </div>
                   </div>
                 ))}
-                {isLoading && (
+                {isTyping && (
                   <div className="flex justify-start">
                     <div className="flex items-start space-x-2 max-w-[80%]">
                       <Avatar className="h-8 w-8">
@@ -325,11 +270,11 @@ export default function DefiBrainAIPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                disabled={isLoading}
+                disabled={isTyping}
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={isLoading || !message.trim()}>
+                disabled={isTyping || !message.trim()}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>
@@ -470,7 +415,7 @@ export default function DefiBrainAIPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {aiInsights.map((insight) => (
+            {insights.map((insight: { id: number; type: string; title: string; description: string; confidence: number; impact: string; timeframe: string; action: string }) => (
               <div
                 key={insight.id}
                 className={`border rounded-lg p-6 ${getInsightColor(

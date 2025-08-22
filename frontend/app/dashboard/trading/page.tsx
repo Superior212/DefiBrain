@@ -22,103 +22,54 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { useTrading } from "@/hooks/useTrading";
 
-// Mock data for trading
-const tradingPairs = [
-  {
-    pair: "ETH/USDC",
-    price: "$2,847.32",
-    change: "+2.45%",
-    volume: "$12.4M",
-    isPositive: true
-  },
-  {
-    pair: "BTC/USDC",
-    price: "$43,521.18",
-    change: "-1.23%",
-    volume: "$8.7M",
-    isPositive: false
-  },
-  {
-    pair: "ARB/USDC",
-    price: "$1.24",
-    change: "+5.67%",
-    volume: "$3.2M",
-    isPositive: true
-  },
-  {
-    pair: "USDC/DAI",
-    price: "$1.0002",
-    change: "+0.01%",
-    volume: "$15.8M",
-    isPositive: true
-  }
-];
+// Dynamic trading data is now fetched from useTrading hook
 
-const recentTrades = [
-  {
-    id: 1,
-    pair: "ETH/USDC",
-    type: "Buy",
-    amount: "0.5 ETH",
-    price: "$2,845.00",
-    total: "$1,422.50",
-    time: "2 min ago",
-    status: "Completed"
-  },
-  {
-    id: 2,
-    pair: "BTC/USDC",
-    type: "Sell",
-    amount: "0.1 BTC",
-    price: "$43,600.00",
-    total: "$4,360.00",
-    time: "15 min ago",
-    status: "Completed"
-  },
-  {
-    id: 3,
-    pair: "ARB/USDC",
-    type: "Buy",
-    amount: "1000 ARB",
-    price: "$1.23",
-    total: "$1,230.00",
-    time: "1 hour ago",
-    status: "Pending"
-  }
-];
-
-const priceData = [
-  { time: "09:00", price: 2820 },
-  { time: "10:00", price: 2835 },
-  { time: "11:00", price: 2828 },
-  { time: "12:00", price: 2842 },
-  { time: "13:00", price: 2847 },
-  { time: "14:00", price: 2851 },
-];
-
-const openOrders = [
-  {
-    id: 1,
-    pair: "ETH/USDC",
-    type: "Limit Buy",
-    amount: "1.0 ETH",
-    price: "$2,800.00",
-    filled: "0%",
-    status: "Open"
-  },
-  {
-    id: 2,
-    pair: "BTC/USDC",
-    type: "Limit Sell",
-    amount: "0.2 BTC",
-    price: "$44,000.00",
-    filled: "25%",
-    status: "Partial"
-  }
-];
+// Dynamic data is now fetched from useTrading hook
 
 export default function TradingPage() {
+  const {
+    tradingPairs,
+    recentTrades,
+    openOrders,
+    priceData,
+    stats,
+    isLoading,
+    error,
+    swapTokens,
+    refreshData,
+  } = useTrading();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading trading data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-4" />
+            <p className="text-destructive mb-2">Error loading trading data</p>
+            <p className="text-muted-foreground text-sm mb-4">{error}</p>
+            <Button onClick={refreshData} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -149,7 +100,7 @@ export default function TradingPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$42.3M</div>
+            <div className="text-2xl font-bold">{stats.volume24h}</div>
             <p className="text-xs text-muted-foreground">
               +12.5% from yesterday
             </p>
@@ -162,7 +113,7 @@ export default function TradingPage() {
             <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
+            <div className="text-2xl font-bold">{stats.activePairs}</div>
             <p className="text-xs text-muted-foreground">
               +2 new pairs
             </p>
@@ -172,10 +123,16 @@ export default function TradingPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Your P&L</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            {stats.isPositivePnL ? (
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            )}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">+$1,247</div>
+            <div className={`text-2xl font-bold ${
+              stats.isPositivePnL ? 'text-green-600' : 'text-red-600'
+            }`}>{stats.userPnL}</div>
             <p className="text-xs text-muted-foreground">
               +8.3% this week
             </p>
@@ -188,9 +145,9 @@ export default function TradingPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">{stats.openOrders}</div>
             <p className="text-xs text-muted-foreground">
-              1 partially filled
+              {stats.openOrders > 0 ? '1 partially filled' : 'No active orders'}
             </p>
           </CardContent>
         </Card>
@@ -204,15 +161,21 @@ export default function TradingPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>ETH/USDC</CardTitle>
+                  <CardTitle>{tradingPairs[0]?.pair || 'ETH/USDC'}</CardTitle>
                   <CardDescription>Real-time price chart</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">24h</Badge>
-                  <span className="text-2xl font-bold">$2,847.32</span>
-                  <span className="text-green-600 flex items-center">
-                    <ArrowUpRight className="h-4 w-4" />
-                    +2.45%
+                  <span className="text-2xl font-bold">{tradingPairs[0]?.price || '$2,847.32'}</span>
+                  <span className={`flex items-center ${
+                    tradingPairs[0]?.isPositive ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {tradingPairs[0]?.isPositive ? (
+                      <ArrowUpRight className="h-4 w-4" />
+                    ) : (
+                      <ArrowDownRight className="h-4 w-4" />
+                    )}
+                    {tradingPairs[0]?.change || '+2.45%'}
                   </span>
                 </div>
               </div>

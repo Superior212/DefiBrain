@@ -8,6 +8,9 @@ import "../src/PortfolioTracker.sol";
 import "../src/ProtocolAdapters.sol";
 import "../src/DefiBrainVault.sol";
 import "../src/YieldFarmingStrategy.sol";
+import "../src/USDC.sol";
+import "../src/WETH.sol";
+import "../src/DAI.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
@@ -25,26 +28,26 @@ contract DeployPhase1 is Script {
     DefiBrainVault public defiBrainVault;
     YieldFarmingStrategy public yieldStrategy;
     
-    // Mock tokens for testing
-    ERC20 public mockUSDC;
-    ERC20 public mockWETH;
-    ERC20 public mockDAI;
+    // Test tokens for deployment
+    USDC public testUSDC;
+    WETH public testWETH;
+    DAI public testDAI;
     
     // Configuration
     struct DeploymentConfig {
         address deployer;
-        bool deployMockTokens;
+        bool deployTestTokens;
         bool setupInitialPools;
         bool registerMockProtocols;
     }
     
-    function run() external {
+    function run() external virtual {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
         DeploymentConfig memory config = DeploymentConfig({
             deployer: deployer,
-            deployMockTokens: true,
+            deployTestTokens: true,
             setupInitialPools: true,
             registerMockProtocols: true
         });
@@ -87,15 +90,15 @@ contract DeployPhase1 is Script {
         console.log("ProtocolAdapters deployed at:", address(protocolAdapters));
         
         // 5. Deploy mock tokens if needed
-        if (config.deployMockTokens) {
-            deployMockTokens();
+        if (config.deployTestTokens) {
+            deployTestTokens();
         }
         
-        // 6. Deploy DefiBrainVault with mock USDC
+        // 6. Deploy DefiBrainVault with test USDC
         console.log("Deploying DefiBrainVault...");
-        if (config.deployMockTokens) {
+        if (config.deployTestTokens) {
             defiBrainVault = new DefiBrainVault(
-                IERC20Metadata(address(mockUSDC)),
+                IERC20Metadata(address(testUSDC)),
                 "DefiBrain USDC Vault",
                 "dbUSDC"
             );
@@ -111,11 +114,11 @@ contract DeployPhase1 is Script {
         
         // 7. Deploy YieldFarmingStrategy
         console.log("Deploying YieldFarmingStrategy...");
-        if (config.deployMockTokens) {
+        if (config.deployTestTokens) {
             yieldStrategy = new YieldFarmingStrategy(
-                IERC20(address(mockUSDC)),
-                "Mock USDC Yield Strategy",
-                "A sample yield farming strategy for USDC",
+                IERC20(address(testUSDC)),
+                "USDC Yield Strategy",
+                "A yield farming strategy for USDC",
                 5 // Medium risk level
             );
         } else {
@@ -129,26 +132,26 @@ contract DeployPhase1 is Script {
         console.log("YieldFarmingStrategy deployed at:", address(yieldStrategy));
     }
     
-    function deployMockTokens() internal {
-        console.log("Deploying mock tokens...");
+    function deployTestTokens() internal {
+        console.log("Deploying test tokens...");
         
-        // Deploy mock USDC
-        mockUSDC = new MockERC20("Mock USDC", "mUSDC", 6);
-        console.log("Mock USDC deployed at:", address(mockUSDC));
+        // Deploy USDC
+        testUSDC = new USDC();
+        console.log("USDC deployed at:", address(testUSDC));
         
-        // Deploy mock WETH
-        mockWETH = new MockERC20("Mock WETH", "mWETH", 18);
-        console.log("Mock WETH deployed at:", address(mockWETH));
+        // Deploy WETH
+        testWETH = new WETH();
+        console.log("WETH deployed at:", address(testWETH));
         
-        // Deploy mock DAI
-        mockDAI = new MockERC20("Mock DAI", "mDAI", 18);
-        console.log("Mock DAI deployed at:", address(mockDAI));
+        // Deploy DAI
+        testDAI = new DAI();
+        console.log("DAI deployed at:", address(testDAI));
     }
     
     function setupInitialConfiguration(DeploymentConfig memory config) internal {
         console.log("=== Setting up initial configuration ===");
         
-        if (config.deployMockTokens) {
+        if (config.deployTestTokens) {
             setupMockPriceFeeds();
             setupDEXTokensAndPools(config);
         }
@@ -172,19 +175,19 @@ contract DeployPhase1 is Script {
         address mockDAIPriceFeed = address(0x3333333333333333333333333333333333333333);
         
         // Add price feeds (these will fail in testing but show the structure)
-        try priceOracle.addPriceFeed(address(mockUSDC), mockUSDCPriceFeed, 3600) {
+        try priceOracle.addPriceFeed(address(testUSDC), mockUSDCPriceFeed, 3600) {
             console.log("USDC price feed added");
         } catch {
             console.log("USDC price feed setup skipped (mock environment)");
         }
         
-        try priceOracle.addPriceFeed(address(mockWETH), mockWETHPriceFeed, 3600) {
+        try priceOracle.addPriceFeed(address(testWETH), mockWETHPriceFeed, 3600) {
             console.log("WETH price feed added");
         } catch {
             console.log("WETH price feed setup skipped (mock environment)");
         }
         
-        try priceOracle.addPriceFeed(address(mockDAI), mockDAIPriceFeed, 3600) {
+        try priceOracle.addPriceFeed(address(testDAI), mockDAIPriceFeed, 3600) {
             console.log("DAI price feed added");
         } catch {
             console.log("DAI price feed setup skipped (mock environment)");
@@ -195,15 +198,15 @@ contract DeployPhase1 is Script {
         console.log("Setting up DEX tokens and pools...");
         
         // Add supported tokens to DEX
-        dexRouter.addSupportedToken(address(mockUSDC));
-        dexRouter.addSupportedToken(address(mockWETH));
-        dexRouter.addSupportedToken(address(mockDAI));
+        dexRouter.addSupportedToken(address(testUSDC));
+        dexRouter.addSupportedToken(address(testWETH));
+        dexRouter.addSupportedToken(address(testDAI));
         
         if (config.setupInitialPools) {
             // Create initial trading pools
-            dexRouter.createPool(address(mockUSDC), address(mockWETH));
-            dexRouter.createPool(address(mockUSDC), address(mockDAI));
-            dexRouter.createPool(address(mockWETH), address(mockDAI));
+            dexRouter.createPool(address(testUSDC), address(testWETH));
+            dexRouter.createPool(address(testUSDC), address(testDAI));
+            dexRouter.createPool(address(testWETH), address(testDAI));
             
             console.log("Initial DEX pools created");
         }
@@ -286,11 +289,11 @@ contract DeployPhase1 is Script {
         console.log("DefiBrainVault:", address(defiBrainVault));
         console.log("YieldFarmingStrategy:", address(yieldStrategy));
         
-        if (address(mockUSDC) != address(0)) {
-            console.log("\n=== Mock Tokens ===");
-            console.log("Mock USDC:", address(mockUSDC));
-            console.log("Mock WETH:", address(mockWETH));
-            console.log("Mock DAI:", address(mockDAI));
+        if (address(testUSDC) != address(0)) {
+            console.log("\n=== Test Tokens ===");
+            console.log("USDC:", address(testUSDC));
+            console.log("WETH:", address(testWETH));
+            console.log("DAI:", address(testDAI));
         }
         
         console.log("\n=== Next Steps ===");
@@ -299,33 +302,5 @@ contract DeployPhase1 is Script {
         console.log("3. Add liquidity to DEX pools");
         console.log("4. Test all contract interactions");
         console.log("5. Deploy Phase 2 contracts when ready");
-    }
-}
-
-/**
- * @dev Mock ERC20 token for testing
- */
-contract MockERC20 is ERC20 {
-    uint8 private _decimals;
-    
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint8 decimals_
-    ) ERC20(name, symbol) {
-        _decimals = decimals_;
-        _mint(msg.sender, 1000000 * 10**decimals_);
-    }
-    
-    function decimals() public view virtual override returns (uint8) {
-        return _decimals;
-    }
-    
-    function mint(address to, uint256 amount) external {
-        _mint(to, amount);
-    }
-    
-    function burn(uint256 amount) external {
-        _burn(msg.sender, amount);
     }
 }

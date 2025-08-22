@@ -133,6 +133,13 @@ contract DefiBrainVault is Ownable, ReentrancyGuard, Pausable {
     }
 
     /**
+     * @dev Preview withdraw to calculate shares needed for given assets
+     */
+    function previewWithdraw(uint256 assets) public view returns (uint256) {
+        return totalAssets == 0 ? 0 : (assets * totalShares) / totalAssets;
+    }
+
+    /**
      * @dev Add a new strategy (only owner)
      */
     function addStrategy(address strategy, uint256 allocation) external onlyOwner {

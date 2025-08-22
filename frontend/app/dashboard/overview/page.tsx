@@ -35,15 +35,36 @@ import { WalletInfo } from "@/components/web3/WalletInfo";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { usePrivy } from "@privy-io/react-auth";
 
-// Enhanced mock data with more realistic portfolio growth
-const mockChartData = [
-  { name: "Jan", value: 10000, change: 0 },
-  { name: "Feb", value: 12500, change: 25 },
-  { name: "Mar", value: 11800, change: -5.6 },
-  { name: "Apr", value: 15200, change: 28.8 },
-  { name: "May", value: 18900, change: 24.3 },
-  { name: "Jun", value: 22400, change: 18.5 },
-];
+// Generate chart data based on portfolio performance
+function generateChartData(portfolioData: { totalValue: string; totalDeposited: string; totalYield: string; } | null, vaultInfo: { apy: number; } | null) {
+  if (!portfolioData) {
+    return [
+      { name: "Current", value: 0, change: 0 },
+    ];
+  }
+  
+  const currentValue = parseFloat(portfolioData.totalValue);
+  const deposited = parseFloat(portfolioData.totalDeposited);
+  const yieldEarned = parseFloat(portfolioData.totalYield);
+  
+  // Generate historical data points based on current performance
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const chartData = [];
+  
+  for (let i = 0; i < 6; i++) {
+    const progress = (i + 1) / 6;
+    const value = deposited + (yieldEarned * progress);
+    const change = i === 0 ? 0 : ((value - (deposited + (yieldEarned * (i / 6)))) / (deposited + (yieldEarned * (i / 6)))) * 100;
+    
+    chartData.push({
+      name: months[i],
+      value: Math.max(value, 0),
+      change: Number(change.toFixed(1))
+    });
+  }
+  
+  return chartData;
+}
 
 const recentActivities = [
   {
@@ -72,6 +93,9 @@ const recentActivities = [
 export default function Page() {
   const { authenticated } = usePrivy();
   const { portfolioData, vaultInfo, isLoading, refreshData } = usePortfolio();
+  
+  // Generate dynamic chart data
+  const chartData = generateChartData(portfolioData, vaultInfo);
 
   if (!authenticated) {
     return (
@@ -134,9 +158,19 @@ export default function Page() {
               <div className="text-2xl font-bold">
                 ${portfolioData?.totalValue || "0.00"}
               </div>
-              <div className="flex items-center text-xs text-green-600">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +18.5% from last week
+              <div className={`flex items-center text-xs ${
+                portfolioData?.yieldPercentage && portfolioData.yieldPercentage > 0 ? 
+                'text-green-600' : 'text-red-600'
+              }`}>
+                {portfolioData?.yieldPercentage && portfolioData.yieldPercentage > 0 ? (
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 mr-1" />
+                )}
+                {portfolioData?.yieldPercentage ? 
+                  `${portfolioData.yieldPercentage > 0 ? '+' : ''}${portfolioData.yieldPercentage.toFixed(1)}%` : 
+                  "0.0%"
+                } total yield
               </div>
             </CardContent>
           </Card>
@@ -149,10 +183,12 @@ export default function Page() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">15.7%</div>
+              <div className="text-2xl font-bold">
+                {vaultInfo?.apy ? `${vaultInfo.apy}%` : "0.0%"}
+              </div>
               <div className="flex items-center text-xs text-green-600">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                +2.1% from last month
+                {portfolioData?.yieldPercentage ? `+${portfolioData.yieldPercentage.toFixed(1)}%` : "+0.0%"} total yield
               </div>
             </CardContent>
           </Card>
@@ -165,8 +201,19 @@ export default function Page() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">92%</div>
-              <Progress value={92} className="mt-2" />
+              <div className="text-2xl font-bold">
+                {portfolioData ? 
+                  `${Math.min(100, Math.max(0, 85 + (portfolioData.yieldPercentage * 2))).toFixed(0)}%` : 
+                  "0%"
+                }
+              </div>
+              <Progress 
+                value={portfolioData ? 
+                  Math.min(100, Math.max(0, 85 + (portfolioData.yieldPercentage * 2))) : 
+                  0
+                } 
+                className="mt-2" 
+              />
             </CardContent>
           </Card>
         </div>
@@ -181,9 +228,19 @@ export default function Page() {
               <div className="flex items-center gap-2">
                 <Badge
                   variant="secondary"
-                  className="bg-green-100 text-green-800">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +124% Total Return
+                  className={portfolioData?.yieldPercentage && portfolioData.yieldPercentage > 0 ? 
+                    "bg-green-100 text-green-800" : 
+                    "bg-gray-100 text-gray-800"
+                  }>
+                  {portfolioData?.yieldPercentage && portfolioData.yieldPercentage > 0 ? (
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 mr-1" />
+                  )}
+                  {portfolioData?.yieldPercentage ? 
+                    `${portfolioData.yieldPercentage > 0 ? '+' : ''}${portfolioData.yieldPercentage.toFixed(1)}%` : 
+                    "0.0%"
+                  } Total Return
                 </Badge>
                 <Button variant="outline" size="sm">
                   <Calendar className="h-4 w-4 mr-2" />
@@ -195,7 +252,7 @@ export default function Page() {
           <CardContent>
             <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockChartData}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient
                       id="portfolioGradient"

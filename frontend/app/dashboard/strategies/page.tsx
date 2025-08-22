@@ -21,90 +21,51 @@ import {
   Users
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { useStrategies } from "@/hooks/useStrategies";
 
-// Mock data for strategies
-const activeStrategies = [
-  {
-    id: 1,
-    name: "USDC Yield Optimizer",
-    protocol: "Merchant Moe",
-    apy: "12.5%",
-    tvl: "$2.4M",
-    risk: "Low",
-    status: "Active",
-    allocation: "$5,200",
-    performance: "+8.2%"
-  },
-  {
-    id: 2,
-    name: "ETH Liquidity Mining",
-    protocol: "Agni Finance",
-    apy: "18.7%",
-    tvl: "$1.8M",
-    risk: "Medium",
-    status: "Active",
-    allocation: "$3,800",
-    performance: "+15.3%"
-  },
-  {
-    id: 3,
-    name: "BTC Lending Strategy",
-    protocol: "FusionX",
-    apy: "15.2%",
-    tvl: "$3.1M",
-    risk: "Low",
-    status: "Active",
-    allocation: "$7,500",
-    performance: "+11.8%"
-  }
-];
-
-const availableStrategies = [
-  {
-    name: "Arbitrum Yield Farm",
-    protocol: "Camelot",
-    apy: "22.4%",
-    tvl: "$890K",
-    risk: "High",
-    minDeposit: "$100",
-    lockPeriod: "30 days"
-  },
-  {
-    name: "Stablecoin Arbitrage",
-    protocol: "Curve",
-    apy: "8.9%",
-    tvl: "$12.5M",
-    risk: "Low",
-    minDeposit: "$50",
-    lockPeriod: "None"
-  },
-  {
-    name: "Delta Neutral Strategy",
-    protocol: "GMX",
-    apy: "16.8%",
-    tvl: "$4.2M",
-    risk: "Medium",
-    minDeposit: "$500",
-    lockPeriod: "14 days"
-  }
-];
-
-const performanceData = [
-  { name: "Jan", value: 100 },
-  { name: "Feb", value: 108 },
-  { name: "Mar", value: 112 },
-  { name: "Apr", value: 118 },
-  { name: "May", value: 125 },
-  { name: "Jun", value: 132 }
-];
-
-const riskMetrics = [
-  { name: "Low Risk", value: 45, color: "#10b981" },
-  { name: "Medium Risk", value: 35, color: "#f59e0b" },
-  { name: "High Risk", value: 20, color: "#ef4444" }
-];
+// Dynamic data is now fetched from useStrategies hook
 
 export default function StrategiesPage() {
+  const {
+    activeStrategies,
+    availableStrategies,
+    performanceData,
+    riskMetrics,
+    stats,
+    isLoading,
+    error,
+    refreshData,
+  } = useStrategies();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading strategies data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="h-8 w-8 text-destructive mx-auto mb-4" />
+            <p className="text-destructive mb-2">Error loading strategies data</p>
+            <p className="text-muted-foreground text-sm mb-4">{error}</p>
+            <Button onClick={refreshData} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -129,7 +90,7 @@ export default function StrategiesPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{stats.activeStrategies}</div>
             <p className="text-xs text-muted-foreground">
               +1 from last month
             </p>
@@ -142,7 +103,7 @@ export default function StrategiesPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$16,500</div>
+            <div className="text-2xl font-bold">{stats.totalDeployed}</div>
             <p className="text-xs text-muted-foreground">
               +12.5% from last month
             </p>
@@ -155,7 +116,7 @@ export default function StrategiesPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15.5%</div>
+            <div className="text-2xl font-bold">{stats.avgAPY}</div>
             <p className="text-xs text-muted-foreground">
               +2.1% from last month
             </p>
@@ -168,7 +129,7 @@ export default function StrategiesPage() {
             <Sparkles className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$1,847</div>
+            <div className="text-2xl font-bold">{stats.totalReturn}</div>
             <p className="text-xs text-muted-foreground">
               +18.2% from last month
             </p>

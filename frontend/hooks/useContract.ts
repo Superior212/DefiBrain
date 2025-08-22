@@ -2,9 +2,13 @@
 
 import { useState, useCallback } from 'react';
 import { useActiveWallet } from 'thirdweb/react';
-import { getContract, prepareContractCall, sendTransaction } from 'thirdweb';
-import { client, anvilNetwork, contracts } from '@/lib/web3';
+import { getContract, prepareContractCall, sendTransaction, readContract } from 'thirdweb';
+import { client, mantleTestnet, contracts } from '@/lib/web3';
 import { usePrivy } from '@privy-io/react-auth';
+
+// Type definitions for contract interactions
+type ContractMethod = string;
+type ContractParams = readonly unknown[];
 
 export interface ContractCallResult {
   success: boolean;
@@ -23,17 +27,18 @@ export function useContract() {
     const contractConfig = contracts[contractType];
     return getContract({
       client,
-      chain: anvilNetwork,
+      chain: mantleTestnet,
       address: contractConfig.address,
-      abi: contractConfig.abi,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      abi: contractConfig.abi as any,
     });
   }, [wallet]);
 
   const executeContractCall = useCallback(
     async (
       contractAddress: string,
-      functionName: string,
-      args: any[] = [],
+      functionName: ContractMethod,
+      args: ContractParams = [],
       value?: bigint
     ): Promise<ContractCallResult> => {
       if (!authenticated || !wallet) {
@@ -44,12 +49,13 @@ export function useContract() {
       try {
         const contract = getContract({
           client,
-          chain: anvilNetwork,
+          chain: mantleTestnet,
           address: contractAddress,
         });
 
         const transaction = prepareContractCall({
           contract,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           method: functionName as any,
           params: args,
           value,
@@ -69,11 +75,11 @@ export function useContract() {
           success: true,
           txHash: result.transactionHash,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Contract call failed:', error);
         return {
           success: false,
-          error: error.message || 'Transaction failed',
+          error: error instanceof Error ? error.message : 'Transaction failed',
         };
       } finally {
         setIsLoading(false);
@@ -85,27 +91,54 @@ export function useContract() {
   // Vault-specific functions
   const depositToVault = useCallback(
     async (amount: string): Promise<ContractCallResult> => {
-      const amountWei = BigInt(parseFloat(amount) * 10 ** 18);
+      const amountWei = BigInt(parseFloat(amount) * 10 ** 6); // USDC has 6 decimals
+      const userAddress = wallet?.getAccount()?.address;
+      if (!userAddress) {
+        return { success: false, error: 'Wallet not connected' };
+      }
       return executeContractCall(
         contracts.vault.address,
         'deposit',
-        [amountWei],
+        [amountWei, userAddress],
         amountWei
       );
     },
-    [executeContractCall]
+    [executeContractCall, wallet]
   );
 
   const withdrawFromVault = useCallback(
-    async (shares: string): Promise<ContractCallResult> => {
-      const sharesWei = BigInt(parseFloat(shares) * 10 ** 18);
-      return executeContractCall(
-        contracts.vault.address,
-        'withdraw',
-        [sharesWei]
-      );
+    async (assetAmount: string): Promise<ContractCallResult> => {
+      const userAddress = wallet?.getAccount()?.address;
+      if (!userAddress) {
+        return { success: false, error: 'Wallet not connected' };
+      }
+      
+      try {
+        // Convert asset amount to shares using previewWithdraw
+        const assetAmountWei = BigInt(parseFloat(assetAmount) * 10 ** 6); // USDC has 6 decimals
+        const vaultContract = getContract({
+          client,
+          chain: mantleTestnet,
+          address: contracts.vault.address,
+        });
+        
+        const sharesNeeded = await readContract({
+          contract: vaultContract,
+          method: "function previewWithdraw(uint256 assets) external view returns (uint256)",
+          params: [assetAmountWei],
+        });
+        
+        return executeContractCall(
+          contracts.vault.address,
+          'redeem',
+          [sharesNeeded, userAddress, userAddress]
+        );
+      } catch (error) {
+        console.error('Error calculating shares for withdrawal:', error);
+        return { success: false, error: 'Failed to calculate withdrawal amount' };
+      }
     },
-    [executeContractCall]
+    [executeContractCall, wallet]
   );
 
   // DEX Router functions

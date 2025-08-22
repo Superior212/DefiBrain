@@ -13,30 +13,52 @@ import {
 } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from "recharts";
 import Link from "next/link";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { Button } from "@/components/ui/button";
 
-const performanceData = [
-  { name: 'Jan', value: 18500 },
-  { name: 'Feb', value: 19200 },
-  { name: 'Mar', value: 20100 },
-  { name: 'Apr', value: 21800 },
-  { name: 'May', value: 22400 },
-  { name: 'Jun', value: 23100 }
-];
-
-const allocationData = [
-  { name: 'USDC', value: 45, color: '#22c55e' },
-  { name: 'ETH', value: 35, color: '#8b5cf6' },
-  { name: 'BTC', value: 20, color: '#f97316' }
-];
-
-const yieldData = [
-  { name: 'Week 1', conservative: 8.2, balanced: 14.8, aggressive: 21.5 },
-  { name: 'Week 2', conservative: 8.5, balanced: 15.2, aggressive: 22.1 },
-  { name: 'Week 3', conservative: 8.1, balanced: 14.9, aggressive: 21.8 },
-  { name: 'Week 4', conservative: 8.7, balanced: 15.6, aggressive: 22.8 }
-];
+// Dynamic data is now fetched from useAnalytics hook
 
 export default function AnalyticsPage() {
+  const {
+    performanceMetrics,
+    performanceData,
+    allocationData,
+    yieldData,
+    stats,
+    isLoading,
+    error,
+    refreshData,
+  } = useAnalytics();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading analytics data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="h-8 w-8 text-destructive mx-auto mb-4" />
+            <p className="text-destructive mb-2">Error loading analytics data</p>
+            <p className="text-muted-foreground text-sm mb-4">{error}</p>
+            <Button onClick={refreshData} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div>
       {/* Header */}
@@ -61,10 +83,10 @@ export default function AnalyticsPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+$4,290</div>
-              <div className="flex items-center text-xs text-green-600">
+              <div className="text-2xl font-bold">{stats.totalReturn}</div>
+              <div className={`flex items-center text-xs ${stats.totalReturnPercentage.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                 <TrendingUp className="h-3 w-3 mr-1" />
-                +23.7% all time
+                {stats.totalReturnPercentage} all time
               </div>
             </CardContent>
           </Card>
@@ -75,7 +97,7 @@ export default function AnalyticsPage() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1.42</div>
+              <div className="text-2xl font-bold">{stats.sharpeRatio}</div>
               <p className="text-xs text-muted-foreground">
                 Risk-adjusted returns
               </p>
@@ -88,7 +110,7 @@ export default function AnalyticsPage() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">73%</div>
+              <div className="text-2xl font-bold">{stats.winRate}</div>
               <p className="text-xs text-muted-foreground">
                 Profitable strategies
               </p>
@@ -101,7 +123,7 @@ export default function AnalyticsPage() {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">-8.3%</div>
+              <div className="text-2xl font-bold text-red-600">{stats.maxDrawdown.startsWith('0') ? '0.0%' : `-${stats.maxDrawdown}`}</div>
               <p className="text-xs text-muted-foreground">
                 Largest loss period
               </p>
